@@ -15,6 +15,9 @@ class TreeNode : public std::enable_shared_from_this<TreeNode> {
 public:
     using WP = std::weak_ptr<TreeNode>;
     using SP = std::shared_ptr<TreeNode>;
+    using StatusCallback = std::function<void(TreeNode *, NodeStatus curStatus)>;
+
+    void invokeStatusCallbacks(NodeStatus curStatus);
 
 public:
     int id;
@@ -47,7 +50,13 @@ public:
     NodeStatus getStatus() const {
         return status;
     }
+
+    void registerStatusCallback(const StatusCallback &callback);
+
+private:
+    std::vector<StatusCallback> statusCallbacks;
 };
+
 
 std::string toString(NodeType type);
 

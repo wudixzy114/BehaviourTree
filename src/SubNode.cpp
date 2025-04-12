@@ -7,8 +7,8 @@ REGISTER_NODE_TYPE(NodeType::Selector, SelectorNode, "Selector")
 NodeStatus SequenceNode::update(float dt, Blackboard &blackboard) {
     for (auto i = runningChildIndex; i < children.size(); ++i) {
         const auto &child = children[i];
-        NodeStatus childStatus = child->update(dt, blackboard);
-        switch (childStatus) {
+        NodeStatus newStatus = child->update(dt, blackboard);
+        switch (newStatus) {
             case NodeStatus::Success:
                 continue;
             case NodeStatus::Failure:
@@ -24,6 +24,8 @@ NodeStatus SequenceNode::update(float dt, Blackboard &blackboard) {
                 status = NodeStatus::Failure;
                 return status;
         }
+
+        child->invokeStatusCallbacks(newStatus);
     }
 
     runningChildIndex = 0;
@@ -42,8 +44,8 @@ void SequenceNode::reset() {
 NodeStatus SelectorNode::update(float dt, Blackboard &blackboard) {
     for (auto i = runningChildIndex; i < children.size(); ++i) {
         const auto &child = children[i];
-        NodeStatus childStatus = child->update(dt, blackboard);
-        switch (childStatus) {
+        NodeStatus newStatus = child->update(dt, blackboard);
+        switch (newStatus) {
             case NodeStatus::Success:
                 runningChildIndex = 0;
                 status = NodeStatus::Success;
@@ -57,6 +59,8 @@ NodeStatus SelectorNode::update(float dt, Blackboard &blackboard) {
             case NodeStatus::Invalid:
                 continue;
         }
+
+        child->invokeStatusCallbacks(newStatus);
     }
 
     runningChildIndex = 0;
