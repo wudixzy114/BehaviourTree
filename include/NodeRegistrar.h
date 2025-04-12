@@ -63,7 +63,7 @@ struct NodeRegistrar {
                 #ClassName,                                               \
                 NodeStringName, \
                 [](int id, const std::string& name)->TreeNode::SP{ \
-                    return std::make_shared<ClassName>(id,name); \
+                    return std::make_shared<ClassName>(id,name,#ClassName); \
                 } \
         );   \
     }

@@ -19,6 +19,8 @@ public:
 
     void loadFromJson(const std::string &filename);
 
+    void setNodeCallback(int id, const NodeCallback &callback);
+
     NodeStatus update(float dt) {
         if (root) {
             return root->update(dt, blackboard);

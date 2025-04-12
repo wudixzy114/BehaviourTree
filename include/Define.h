@@ -1,6 +1,8 @@
 #ifndef DEFINE_H
 #define DEFINE_H
 
+class Blackboard;
+
 enum class NodeType {
     Sequence,
     Selector,
@@ -15,5 +17,7 @@ enum class NodeStatus {
     Failure,
     Running
 };
+
+using NodeCallback = std::function<NodeStatus(float, Blackboard &)>;
 
 #endif //DEFINE_H

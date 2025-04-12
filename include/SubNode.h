@@ -24,7 +24,7 @@ public:
     ActionNode(int id, const std::string &name, const std::string &className)
             : TreeNode(id, NodeType::Action, className, name) {}
 
-    NodeStatus update(float dt, Blackboard &blackboard) override = 0;
+    NodeStatus update(float dt, Blackboard &blackboard) override;
 };
 
 class SelectorNode : public TreeNode {
@@ -48,7 +48,7 @@ public:
                                                                                             className,
                                                                                             name) {}
 
-    NodeStatus update(float dt, Blackboard &blackboard) override = 0;
+    NodeStatus update(float dt, Blackboard &blackboard) override;
 };
 
 #endif //SUBNODE_H

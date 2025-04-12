@@ -29,17 +29,3 @@ void TreeNode::serialize(nlohmann::json &nodeJson) const {
     }
 }
 
-void TreeNode::registerStatusCallback(const TreeNode::StatusCallback &callback) {
-    statusCallbacks.push_back(callback);
-}
-
-void TreeNode::invokeStatusCallbacks(NodeStatus newStatus) {
-    switch (newStatus) {
-        case NodeStatus::Success:
-            for (const auto &callback: statusCallbacks) {
-                callback(this, newStatus);
-            }
-        default:
-            throw std::runtime_error("No match callback status");
-    }
-}

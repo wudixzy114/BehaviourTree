@@ -110,3 +110,11 @@ void BehaviorTree::loadFromJson(const std::string &filename) {
         }
     }
 }
+
+void BehaviorTree::setNodeCallback(int id, const NodeCallback &callback) {
+    auto it = nodeMap.find(id);
+    if (it == nodeMap.end()) {
+        throw std::invalid_argument("Node with ID " + std::to_string(id) + " not found");
+    }
+    it->second->setCallback(callback);
+}
