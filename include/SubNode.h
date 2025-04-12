@@ -2,34 +2,53 @@
 #define SUBNODE_H
 
 #include "TreeNode.h"
+#include "Define.h"
 
 class SequenceNode : public TreeNode {
 public:
-    SequenceNode(int id, const std::string &name) : TreeNode(id, NodeType::Sequence, name) {}
+    SequenceNode(int id, const std::string &name, const std::string &className = "") : TreeNode(id, NodeType::Sequence,
+                                                                                                className,
+                                                                                                name),
+                                                                                       runningChildIndex(0) {}
 
-    void a() const override {}
+    NodeStatus update(float dt, Blackboard &blackboard) override;
+
+    void reset() override;
+
+private:
+    size_t runningChildIndex;
 };
 
 class ActionNode : public TreeNode {
 public:
-    ActionNode(int id, const std::string &name)
-            : TreeNode(id, NodeType::Action, name) {}
+    ActionNode(int id, const std::string &name, const std::string &className)
+            : TreeNode(id, NodeType::Action, className, name) {}
 
-    void a() const override {}
+    NodeStatus update(float dt, Blackboard &blackboard) override = 0;
 };
 
 class SelectorNode : public TreeNode {
 public:
-    SelectorNode(int id, const std::string &name) : TreeNode(id, NodeType::Selector, name) {}
+    SelectorNode(int id, const std::string &name, const std::string &className = "") : TreeNode(id, NodeType::Selector,
+                                                                                                className,
+                                                                                                name),
+                                                                                       runningChildIndex(0) {}
 
-    void a() const override {}
+    NodeStatus update(float dt, Blackboard &blackboard) override;
+
+    void reset() override;
+
+private:
+    size_t runningChildIndex;
 };
 
 class ConditionNode : public TreeNode {
 public:
-    ConditionNode(int id, const std::string &name) : TreeNode(id, NodeType::Condition, name) {}
+    ConditionNode(int id, const std::string &name, const std::string &className) : TreeNode(id, NodeType::Condition,
+                                                                                            className,
+                                                                                            name) {}
 
-    void a() const override {}
+    NodeStatus update(float dt, Blackboard &blackboard) override = 0;
 };
 
 #endif //SUBNODE_H

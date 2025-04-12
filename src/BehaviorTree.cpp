@@ -4,8 +4,9 @@
 #include "TreeNode.h"
 #include "NodeFactory.h"
 
-void BehaviorTree::addNode(const BehaviorTree::SP &parent, NodeType type, int id, const std::string &name) {
-    auto node = NodeFactory::getInstance().createNode(type, id, name);
+void BehaviorTree::addNode(const BehaviorTree::SP &parent, NodeType type, int id, const std::string &name,
+                           const std::string &className) {
+    auto node = NodeFactory::getInstance().createNode(type, id, name, className);
     node->parent = parent;
     if (parent) {
         parent->children.push_back(node);
@@ -80,7 +81,8 @@ void BehaviorTree::loadFromJson(const std::string &filename) {
         int id = nodeJson["id"].get<int>();
         NodeType type = parseNodeType(nodeJson["type"].get<std::string>());
         std::string name = nodeJson["name"].get<std::string>();
-        auto node = NodeFactory::getInstance().createNode(type, id, name);
+        std::string className = nodeJson["class"].get<std::string>();
+        auto node = NodeFactory::getInstance().createNode(type, id, name, className);
         node->properties = nodeJson["properties"].get<std::map<std::string, std::string>>();
         nodeMap[id] = node;
     }

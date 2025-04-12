@@ -3,5 +3,71 @@
 
 REGISTER_NODE_TYPE(NodeType::Sequence, SequenceNode, "Sequence")
 REGISTER_NODE_TYPE(NodeType::Selector, SelectorNode, "Selector")
-REGISTER_NODE_TYPE(NodeType::Action, ActionNode, "Action")
-REGISTER_NODE_TYPE(NodeType::Condition, ConditionNode, "Condition")
+
+NodeStatus SequenceNode::update(float dt, Blackboard &blackboard) {
+    for (auto i = runningChildIndex; i < children.size(); ++i) {
+        const auto &child = children[i];
+        NodeStatus childStatus = child->update(dt, blackboard);
+        switch (childStatus) {
+            case NodeStatus::Success:
+                continue;
+            case NodeStatus::Failure:
+                runningChildIndex = 0;
+                status = NodeStatus::Failure;
+                return status;
+            case NodeStatus::Running:
+                runningChildIndex = i;
+                status = NodeStatus::Running;
+                return status;
+            case NodeStatus::Invalid:
+                runningChildIndex = 0;
+                status = NodeStatus::Failure;
+                return status;
+        }
+    }
+
+    runningChildIndex = 0;
+    status = NodeStatus::Success;
+    return status;
+}
+
+void SequenceNode::reset() {
+    TreeNode::reset();
+    runningChildIndex = 0;
+    for (const auto &child: children) {
+        child->reset();
+    }
+}
+
+NodeStatus SelectorNode::update(float dt, Blackboard &blackboard) {
+    for (auto i = runningChildIndex; i < children.size(); ++i) {
+        const auto &child = children[i];
+        NodeStatus childStatus = child->update(dt, blackboard);
+        switch (childStatus) {
+            case NodeStatus::Success:
+                runningChildIndex = 0;
+                status = NodeStatus::Success;
+                return status;
+            case NodeStatus::Failure:
+                continue;
+            case NodeStatus::Running:
+                runningChildIndex = i;
+                status = NodeStatus::Running;
+                return status;
+            case NodeStatus::Invalid:
+                continue;
+        }
+    }
+
+    runningChildIndex = 0;
+    status = NodeStatus::Failure;
+    return status;
+}
+
+void SelectorNode::reset() {
+    TreeNode::reset();
+    runningChildIndex = 0;
+    for (const auto &child: children) {
+        child->reset();
+    }
+}

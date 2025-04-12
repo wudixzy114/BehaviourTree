@@ -21,6 +21,7 @@ void TreeNode::serialize(nlohmann::json &nodeJson) const {
     nodeJson["id"] = id;
     nodeJson["type"] = toString(type);
     nodeJson["name"] = name;
+    nodeJson["className"] = className;
     nodeJson["properties"] = properties;
     nodeJson["children"] = nlohmann::json::array();
     for (const auto &child: children) {

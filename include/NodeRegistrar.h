@@ -3,6 +3,7 @@
 
 #include "NodeFactory.h"
 #include "TreeNode.h"
+#include "Define.h"
 
 
 class NodeTypeRegistry {
@@ -48,19 +49,21 @@ private:
 };
 
 struct NodeRegistrar {
-    NodeRegistrar(NodeType type, const std::string &typeString, NodeFactory::Creator creator) {
-        NodeFactory::getInstance().registerType(type, std::move(creator));
+    NodeRegistrar(NodeType type, const std::string &className, const std::string &typeString,
+                  NodeFactory::Creator creator) {
+        NodeFactory::getInstance().registerType(type, className, std::move(creator));
         NodeTypeRegistry::registerMapping(type, typeString);
     }
 };
 
-#define REGISTER_NODE_TYPE(NodeType, NodeClass, NodeStringName) \
+#define REGISTER_NODE_TYPE(NodeType, ClassName, NodeStringName) \
     namespace { \
-        static NodeRegistrar registrar_##NodeClass( \
-                NodeType, \
+        static NodeRegistrar registrar_##ClassName( \
+                NodeType,                                       \
+                #ClassName,                                               \
                 NodeStringName, \
                 [](int id, const std::string& name)->TreeNode::SP{ \
-                    return std::make_shared<NodeClass>(id,name); \
+                    return std::make_shared<ClassName>(id,name); \
                 } \
         );   \
     }

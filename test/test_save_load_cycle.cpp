@@ -80,7 +80,7 @@ protected:
             auto parent1 = node1->parent.lock(); // 获取父节点 shared_ptr
             auto parent2 = node2->parent.lock();
             if (parent1) { // 如果 node1 有父节点
-                ASSERT_NE(parent2, nullptr) << "Node " << node2->id << " should have a parent.";
+                ASSERT_NE(parent2, nullptr) << "Node " << node2->id << " should have update parent.";
                 ASSERT_EQ(parent1->id, parent2->id) << "Parent ID mismatch for node " << node1->id;
             } else { // 如果 node1 是根节点
                 ASSERT_EQ(parent2, nullptr) << "Node " << node2->id << " should be root (no parent).";
