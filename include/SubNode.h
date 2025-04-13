@@ -1,6 +1,10 @@
 #ifndef SUBNODE_H
 #define SUBNODE_H
 
+/**
+ * @note 核心头文件，包含所有节点类
+ */
+
 #include "TreeNode.h"
 #include "Define.h"
 

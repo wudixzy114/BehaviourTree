@@ -40,6 +40,10 @@ public:
         return blackboard;
     }
 
+    auto &getNodeMap() const {
+        return nodeMap;
+    }
+
 private:
     SP root;
     std::map<int, SP> nodeMap;
