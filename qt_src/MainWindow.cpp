@@ -8,6 +8,7 @@
 #include <QSplitter>
 #include <iostream>
 #include <QApplication>
+#include <QTextEdit>
 
 #include "MainWindow.h"
 #include "BehaviorTreeNodeItem.h"
@@ -15,41 +16,59 @@
 #include "PropertyEditorWidget.h"
 #include "NodeFactory.h"
 #include "NodeRegistrar.h"
+#include "PaletteItemWidget.h"
 
 MainWindow::MainWindow(QWidget *parent) :
         QMainWindow(parent),
         graphicsView(new QGraphicsView(this)),
         scene(new QGraphicsScene(this)),
-        nodePalette(new QListWidget(this)),
+        nodePalette(new QWidget(this)),
         propertyEditorWidget(new PropertyEditorWidget(this)),
         runtimeTimer(new QTimer(this)) {
     setupUi();
     setupConnections();
     populateNodePalette();
+    graphicsView->setAcceptDrops(true);
 }
 
-MainWindow::~MainWindow() {
-
-}
+MainWindow::~MainWindow() = default;
 
 void MainWindow::setupUi() {
-    QSplitter *mainSplitter = new QSplitter(Qt::Horizontal, this);
+    // 创建中央垂直分割器
+    auto *centerVerticalSplitter = new QSplitter(Qt::Vertical, this);
+
+    // 图形视图添加到中央分割器上方
     graphicsView->setScene(scene);
     graphicsView->setRenderHint(QPainter::Antialiasing);
     graphicsView->setDragMode(QGraphicsView::RubberBandDrag);
+    graphicsView->setAcceptDrops(true);
+    centerVerticalSplitter->addWidget(graphicsView);
 
-    QSplitter *viewPropertySplitter = new QSplitter(Qt::Vertical, this);
-    viewPropertySplitter->addWidget(graphicsView);
-    viewPropertySplitter->addWidget(propertyEditorWidget);
-    viewPropertySplitter->setSizes({400, 150});
+    // 输出窗口添加到中央分割器下方
+    auto *outputWindow = new QTextEdit(this);
+    outputWindow->setReadOnly(true);
+    outputWindow->setPlaceholderText("Output/Log Window");
+    centerVerticalSplitter->addWidget(outputWindow);
 
-    mainSplitter->addWidget(viewPropertySplitter);
-    setCentralWidget(mainSplitter);
+    // 将中央垂直分割器设置为中央窗口部件
+    setCentralWidget(centerVerticalSplitter);
 
-    QDockWidget *paletteDock = new QDockWidget("Node Palette", this);
+    // 节点面板 Dock，停靠在左侧
+    auto *paletteDock = new QDockWidget("Node Palette", this);
     paletteDock->setWidget(nodePalette);
+    paletteDock->setAllowedAreas(Qt::AllDockWidgetAreas);
     addDockWidget(Qt::LeftDockWidgetArea, paletteDock);
 
+    // 属性编辑器 Dock，停靠在右侧
+    auto *propertyDock = new QDockWidget("Property Editor", this);
+    propertyDock->setWidget(propertyEditorWidget);
+    propertyDock->setAllowedAreas(Qt::AllDockWidgetAreas);
+    addDockWidget(Qt::RightDockWidgetArea, propertyDock);
+
+    // 设置中央垂直分割器的初始尺寸比例
+    centerVerticalSplitter->setSizes({800, 200}); // GraphicsView 占大部分空间
+
+    // 菜单栏 (保持不变)
     QMenu *fileMenu = menuBar()->addMenu("&File");
     QAction *openAction = fileMenu->addAction("&Open...");
     QAction *saveAction = fileMenu->addAction("&Save As...");
@@ -78,11 +97,48 @@ void MainWindow::setupConnections() {
 }
 
 void MainWindow::populateNodePalette() {
-    nodePalette->addItem("Sequence");
-    nodePalette->addItem("Selector");
-    nodePalette->addItem("Condition");
-    nodePalette->addItem("Action");
-    nodePalette->setDragEnabled(true);
+    if (!nodePalette) {
+        nodePalette = new QWidget(this);
+    }
+
+    auto *gridLayout = new QGridLayout(nodePalette);
+    nodePalette->setLayout(gridLayout);
+
+    auto loadIcon = [](const QString &name) {
+        QPixmap icon(":/icons/" + name + ".png");
+        if (icon.isNull()) {
+            icon = QPixmap(":/icons/default_node.png");
+            qWarning() << "Icon not found for" << name;
+        }
+        return icon;
+    };
+
+    int row = 0;
+    int col = 0;
+    auto addPaletteItem = [&](const QString &nodeTypeName, const QString &nodeClassName) {
+        QPixmap icon = loadIcon(nodeClassName.toLower());
+        auto *itemWidget = new PaletteItemWidget(nodeTypeName, nodeClassName, icon, nodePalette);
+        gridLayout->addWidget(itemWidget, row, col);
+        col++;
+        if (col >= 3) {
+            col = 0;
+            row++;
+        }
+    };
+
+    addPaletteItem("Sequence", "Sequence");
+    addPaletteItem("Selector", "Selector");
+    addPaletteItem("Condition", "Condition");
+    addPaletteItem("Action", "Action");
+
+    gridLayout->setHorizontalSpacing(10);
+    gridLayout->setVerticalSpacing(10);
+    gridLayout->setContentsMargins(10, 10, 10, 10);
+
+    auto *paletteDock = findChild<QDockWidget *>("Node Palette");
+    if (paletteDock) {
+        paletteDock->setWidget(nodePalette);
+    }
 }
 
 void MainWindow::openFile() {
@@ -174,7 +230,7 @@ void MainWindow::updateConnections(BehaviorTreeNodeItem *item) {
 void MainWindow::onSceneSelectionChanged() {
     QList<QGraphicsItem *> selected = scene->selectedItems();
     if (selected.size() == 1) {
-        BehaviorTreeNodeItem *item = qgraphicsitem_cast<BehaviorTreeNodeItem *>(selected.first());
+        auto *item = qgraphicsitem_cast<BehaviorTreeNodeItem *>(selected.first());
         if (item) {
             propertyEditorWidget->setNode(item->getNode()); // Update property editor
             return;
@@ -184,7 +240,8 @@ void MainWindow::onSceneSelectionChanged() {
 }
 
 void MainWindow::runTick() {
-    float dt = runtimeTimer->isActive() ? (runtimeTimer->interval() / 1000.0f) : 0.1f; // Delta time
+    float dt = runtimeTimer->isActive() ? (runtimeTimer->interval() / 1000.0f)
+                                        : 0.1f; // Delta time NOLINT(*-narrowing-conversions)
     NodeStatus rootStatus = behaviorTree.update(dt); // Update the tree
 
     // Update visualization
@@ -197,6 +254,59 @@ void MainWindow::runTick() {
 
 
 void MainWindow::addNodeFromPalette(QListWidgetItem *item) {
+
     //todo
     QMessageBox::information(this, "Add Node", "Add Node functionality not fully implemented yet.");
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *event) {
+    if (event->mimeData()->hasFormat("text/plain")) {
+        event->acceptProposedAction();
+    }
+}
+
+void MainWindow::dragMoveEvent(QDragMoveEvent *event) {
+    if (event->mimeData()->hasFormat("text/plain")) {
+        event->acceptProposedAction();
+    }
+}
+
+void MainWindow::dropEvent(QDropEvent *event) {
+    if (event->mimeData()->hasFormat("text/plain")) {
+        QString nodeClassName = event->mimeData()->text();
+        NodeType nodeType = NodeTypeRegistry::fromString(nodeClassName.toStdString());
+
+        static int nodeIdCounter = 1000;
+
+        int newNodeId = nodeIdCounter++;
+
+        auto newNode = NodeFactory::getInstance().createNode(nodeType, newNodeId,
+                                                             QString("%1_%2").arg(nodeClassName).arg(
+                                                                     newNodeId).toStdString(),
+                                                             nodeClassName.toStdString());
+        if (!newNode) {
+            QMessageBox::critical(this, "Error Creating Node",
+                                  QString("Failed to create node of type: %1").arg(nodeClassName));
+            return;
+        }
+
+        if (!behaviorTree.getRoot()) {
+            behaviorTree.addNode(nullptr, nodeType, newNodeId, newNode->name, newNode->className);
+        } else {
+            behaviorTree.getNodeMap()[newNodeId] = newNode;
+        }
+
+        auto *item = new BehaviorTreeNodeItem(newNode);
+        scene->addItem(item);
+        graphicsNodeMap[newNodeId] = item;
+
+        QPointF scenePos = graphicsView->mapToScene(event->pos());
+        item->setPos(scenePos);
+
+        connect(item, &BehaviorTreeNodeItem::itemMoved, this, [this, item]() {
+            updateConnections(item);
+        });
+    } else {
+        event->ignore();
+    }
 }

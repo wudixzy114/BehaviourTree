@@ -40,7 +40,7 @@ public:
         return blackboard;
     }
 
-    auto &getNodeMap() const {
+    auto &getNodeMap() {
         return nodeMap;
     }
 

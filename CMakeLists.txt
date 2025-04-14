@@ -17,7 +17,8 @@ file(GLOB PROJECT_SOURCES "src/*.cpp")
 file(GLOB QT_SOURCES "qt_src/*.cpp")
 file(GLOB QT_HEADERS "qt_include/*.h")
 
-add_library(BehaviourTree SHARED ${PROJECT_SOURCES})
+add_library(BehaviourTree SHARED ${PROJECT_SOURCES}
+)
 
 target_include_directories(BehaviourTree
         PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include

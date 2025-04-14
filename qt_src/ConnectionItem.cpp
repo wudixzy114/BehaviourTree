@@ -31,7 +31,6 @@ void ConnectionItem::updatePath() {
     QPointF ctr12 = endPos - QPointF(0, dy * 0.5);
     newPath.cubicTo(ctr11, ctr12, endPos);
 
-    setPath(QPainterPath(startPos));
-    path().lineTo(endPos);
+    setPath(newPath);
     update();
 }

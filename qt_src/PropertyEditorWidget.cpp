@@ -29,11 +29,10 @@ PropertyEditorWidget::PropertyEditorWidget(QWidget *parent) : QWidget(parent),
     layout->addRow("Class", classLabel);
     layout->addRow("Properties", propertiesWidget);
 
-    setLayout(layout);
     clear();
+    setLayout(layout);
 
     connect(nameEdit, &QLineEdit::textChanged, this, &PropertyEditorWidget::onNameChanged);
-
 }
 
 PropertyEditorWidget::~PropertyEditorWidget() = default;
@@ -45,9 +44,7 @@ void PropertyEditorWidget::setNode(std::shared_ptr<TreeNode> node) {
 }
 
 void PropertyEditorWidget::clear() {
-    if (currentNode) {
-        currentNode->reset();
-    }
+    currentNode = nullptr;
     idLabel->clear();
     nameEdit->clear();
     typeLabel->clear();
@@ -73,9 +70,9 @@ void PropertyEditorWidget::updateUiFromNode() {
     for (const auto &[key, value]: currentNode->properties) {
         QLineEdit *propEdit = new QLineEdit(QString::fromStdString(value), this);
         propertiesLayout->addRow(QString::fromStdString(key) + ":", propEdit);
-        connect(propEdit, &QLineEdit::textChanged, this, [this, key = key](const QString &text) {
+        connect(propEdit, &QLineEdit::textChanged, this, [this, basicString = key](const QString &text) {
             if (currentNode) {
-                currentNode->properties[key] = text.toStdString();
+                currentNode->properties[basicString] = text.toStdString();
             }
         });
     }
@@ -89,15 +86,15 @@ void PropertyEditorWidget::onNameChanged(const QString &text) {
     }
 }
 
-void PropertyEditorWidget::clearLayout(QLayout *layout) {
-    if (!layout) {
-        return;
-    }
-    QLayoutItem *item;
-    while ((item = layout->takeAt(0)) != nullptr) {
-        if (item->widget()) {
-            delete item->widget();
+void PropertyEditorWidget::clearLayout(QLayout *layout_) {
+    if (!layout_) return;
+    while (layout_->count() > 0) {
+        QLayoutItem *item = layout_->takeAt(0);
+        if (item) {
+            if (item->widget()) {
+                delete item->widget();
+            }
+            delete item;
         }
-        delete item;
     }
 }

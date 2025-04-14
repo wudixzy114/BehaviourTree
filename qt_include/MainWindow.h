@@ -49,14 +49,25 @@ private:
     void updateConnections(BehaviorTreeNodeItem *item);
 
     BehaviorTree behaviorTree;
+
     QGraphicsView *graphicsView;
     QGraphicsScene *scene;
-    QListWidget *nodePalette;
+
+    QWidget *nodePalette;
     PropertyEditorWidget *propertyEditorWidget;
+
     QTimer *runtimeTimer;
 
     std::map<int, BehaviorTreeNodeItem *> graphicsNodeMap;
     std::vector<ConnectionItem *> connectionItems;
+
+protected:
+
+    void dragEnterEvent(QDragEnterEvent *event) override;
+
+    void dragMoveEvent(QDragMoveEvent *event) override;
+
+    void dropEvent(QDropEvent *event) override;
 };
 
 

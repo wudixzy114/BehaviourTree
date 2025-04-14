@@ -16,21 +16,21 @@ Q_OBJECT
 public:
     explicit BehaviorTreeNodeItem(std::weak_ptr<TreeNode> node, QGraphicsItem *parent = nullptr);
 
-    [[nodiscard]] QRectF boundingRect() const override;
+    QRectF boundingRect() const override;
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
-    [[nodiscard]] std::shared_ptr<TreeNode> getNode() const {
+    std::shared_ptr<TreeNode> getNode() const {
         return node.lock();
     }
 
-    [[nodiscard]] int getNodeId() const;
+    int getNodeId() const;
 
     void setStatus(NodeStatus status);
 
-    [[nodiscard]] QPointF inputPoint() const;
+    QPointF inputPoint() const;
 
-    [[nodiscard]] QPointF outputPoint() const;
+    QPointF outputPoint() const;
 
 signals:
 
